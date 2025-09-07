@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>早餐搭配选择助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        h1 {
+            color: #ff6b6b;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .current-combo {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .current-combo:hover {
+            transform: translateY(-5px);
+        }
+        
+        .combo-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+        
+        .price {
+            font-size: 20px;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .progress-container {
+            margin-bottom: 25px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .next-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .next-btn:hover {
+            background: #ff5252;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .reset-btn {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background: #3db9b1;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .history-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+            text-align: center;
+        }
+        
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .combo-text {
+                font-size: 18px;
+            }
+            
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>早餐搭配选择助手</h1>
+            <p class="description">点击"下一个"按钮获取早餐推荐，系统会记住您的浏览进度</p>
+        </header>
+        
+        <div class="current-combo">
+            <div class="combo-text" id="combo-text">点击"下一个"开始</div>
+            <div class="price" id="combo-price"></div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="progress-text">0/246</span>
+                <span id="percent-text">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="next-btn" id="next-btn">下一个</button>
+            <button class="reset-btn" id="reset-btn">重新开始</button>
+        </div>
+        
+        <div>
+            <div class="history-title">最近浏览</div>
+            <div class="history-list" id="history-list">
+                <div class="history-item">暂无浏览记录</div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 早餐搭配选择助手 | 解决您的早餐选择困难症</p>
+    </footer>
+
+    <script>
+        // 完整的246种早餐搭配
+        const breakfastCombos = [
+            "刀切馒头 + 茶叶蛋 = 3.0元",
+            "刀切馒头 + 鲜肉大烧麦 = 2.5元",
+            "刀切馒头 + 桂花/紫薯发糕 = 3.5元",
+            "刀切馒头 + 奶香/南瓜发糕 = 3.5元",
+            "刀切馒头 + 招牌牛肉馅饼 = 5.0元",
+            "刀切馒头 + 奥尔良鸡肉馅饼 = 5.0元",
+            "刀切馒头 + 猪肉大葱馅饼 = 4.5元",
+            "刀切馒头 + 酸菜馅饼 = 4.0元",
+            "刀切馒头 + 秘制牛肉包 = 4.0元",
+            "刀切馒头 + 奥尔良鸡肉包 = 3.0元",
+            "刀切馒头 + 酱肉包 = 3.0元",
+            "刀切馒头 + 鲜汁肉包 = 3.0元",
+            "刀切馒头 + 小猪椰汁奶黄包 = 3.0元",
+            "刀切馒头 + 鱼香肉丝包 = 2.5元",
+            "刀切馒头 + 梅干菜肉包 = 2.5元",
+            "刀切馒头 + 香辣粉丝包 = 2.5元",
+            "刀切馒头 + 酸菜包 = 2.5元",
+            "刀切馒头 + 藕丁包 = 2.5元",
+            "刀切馒头 + 香菇菜包 = 2.5元",
+            "刀切馒头 + 豆沙包 = 2.5元",
+            "刀切馒头 + 黑芝麻包 = 2.5元",
+            "刀切馒头 + 原味豆浆 = 3.0元",
+        "刀切馒头 + 银耳羹 = 3.5元",
+            "刀切馒头 + 米酒 = 3.5元",
+            "葱油花卷 + 茶叶蛋 = 3.0元",
+            "葱油花卷 + 鲜肉大烧麦 = 2.5元",
+            "葱油花卷 + 桂花/紫薯发糕 = 3.5元",
+            "葱油花卷 + 奶香/南瓜发糕 = 3.5元",
+            "葱油花卷 + 招牌牛肉馅饼 = 5.0元",
+            "葱油花卷 + 奥尔良鸡肉馅饼 = 5.0元",
+            "葱油花卷 + 猪肉大葱馅饼 = 4.5元",
+            "葱油花卷 + 酸菜馅饼 = 4.0元",
+            "葱油花卷 + 秘制牛肉包 = 4.0元",
+            "葱油花卷 + 奥尔良鸡肉包 = 3.0元",
+            "葱油花卷 + 酱肉包 = 3.0元",
+            "葱油花卷 + 鲜汁肉包 = 3.0元",
+            "葱油花卷 + 小猪椰汁奶黄包 = 3.0元",
+            "葱油花卷 + 鱼香肉丝包 = 2.5元",
+            "葱油花卷 + 梅干菜肉包 = 2.5元",
+            "葱油花卷 + 香辣粉丝包 = 2.5元",
+            "葱油花卷 + 酸菜包 = 2.5元",
+            "葱油花卷 + 藕丁包 = 2.5元",
+            "葱油花卷 + 香菇菜包 = 2.5元",
+            "葱油花卷 + 豆沙包 = 2.5元",
+            "葱油花卷 + 黑芝麻包 = 2.5元",
+            "葱油花卷 + 原味豆浆 = 3.0元",
+            "葱油花卷 + 银耳羹 = 3.5元",
+            "葱油花卷 + 米酒 = 3.5元",
+            "红糖馒头 + 茶叶蛋 = 3.5元",
+            "红糖馒头 + 鲜肉大烧麦 = 3.0元",
+            "红糖馒头 + 桂花/紫薯发糕 = 4.0元",
+            "红糖馒头 + 奶香/南瓜发糕 = 4.0元",
+            "红糖馒头 + 招牌牛肉馅饼 = 5.5元",
+            "红糖馒头 + 奥尔良鸡肉馅饼 = 5.5元",
+            "红糖馒头 + 猪肉大葱馅饼 = 5.0元",
+            "红糖馒头 + 酸菜馅饼 = 4.5元",
+            "红糖馒头 + 秘制牛肉包 = 4.5元",
+            "红糖馒头 + 奥尔良鸡肉包 = 3.5元",
+            "红糖馒头 + 酱肉包 = 3.5元",
+            "红糖馒头 + 鲜汁肉包 = 3.5元",
+            "红糖馒头 + 小猪椰汁奶黄包 = 3.5元",
+            "红糖馒头 + 鱼香肉丝包 = 3.0元",
+            "红糖馒头 + 梅干菜肉包 = 3.0元",
+            "红糖馒头 + 香辣粉丝包 = 3.0元",
+            "红糖馒头 + 酸菜包 = 3.0元",
+            "红糖馒头 + 藕丁包 = 3.0元",
+            "红糖馒头 + 香菇菜包 = 3.0元",
+            "红糖馒头 + 豆沙包 = 3.0元",
+            "红糖馒头 + 黑芝麻包 = 3.0元",
+            "红糖馒头 + 原味豆浆 = 3.5元",
+            "红糖馒头 + 银耳羹 = 4.0元",
+            "红糖馒头 + 米酒 = 4.0元",
+            "坚果馒头 + 茶叶蛋 = 3.5元",
+            "坚果馒头 + 鲜肉大烧麦 = 3.0元",
+            "坚果馒头 + 桂花/紫薯发糕 = 4.0元",
+            "坚果馒头 + 奶香/南瓜发糕 = 4.0元",
+            "坚果馒头 + 招牌牛肉馅饼 = 5.5元",
+            "坚果馒头 + 奥尔良鸡肉馅饼 = 5.5元",
+            "坚果馒头 + 猪肉大葱馅饼 = 5.0元",
+            "坚果馒头 + 酸菜馅饼 = 4.5元",
+            "坚果馒头 + 秘制牛肉包 = 4.5元",
+            "坚果馒头 + 奥尔良鸡肉包 = 3.5元",
+            "坚果馒头 + 酱肉包 = 3.5元",
+            "坚果馒头 + 鲜汁肉包 = 3.5元",
+            "坚果馒头 + 小猪椰汁奶黄包 = 3.5元",
+            "坚果馒头 + 鱼香肉丝包 = 3.0元",
+            "坚果馒头 + 梅干菜肉包 = 3.0元",
+            "坚果馒头 + 香辣粉丝包 = 3.0元",
+            "坚果馒头 + 酸菜包 = 3.0元",
+            "坚果馒头 + 藕丁包 = 3.0元",
+            "坚果馒头 + 香菇菜包 = 3.0元",
+            "坚果馒头 + 豆沙包 = 3.0元",
+            "坚果馒头 + 黑芝麻包 = 3.0元",
+            "坚果馒头 + 原味豆浆 = 3.5元",
+            "坚果馒头 + 银耳羹 = 4.0元",
+            "坚果馒头 + 米酒 = 4.0元",
+            "茶叶蛋 + 鲜肉大烧麦 = 3.5元",
+            "茶叶蛋 + 桂花/紫薯发糕 = 4.5元",
+            "茶叶蛋 + 奶香/南瓜发糕 = 4.5元",
+            "茶叶蛋 + 招牌牛肉馅饼 = 6.0元",
+            "茶叶蛋 + 奥尔良鸡肉馅饼 = 6.0元",
+            "茶叶蛋 + 猪肉大葱馅饼 = 5.5元",
+            "茶叶蛋 + 酸菜馅饼 = 5.0元",
+            "茶叶蛋 + 秘制牛肉包 = 5.0元",
+            "茶叶蛋 + 奥尔良鸡肉包 = 4.0元",
+            "茶叶蛋 + 酱肉包 = 4.0元",
+            "茶叶蛋 + 鲜汁肉包 = 4.0元",
+            "茶叶蛋 + 小猪椰汁奶黄包 = 4.0元",
+            "茶叶蛋 + 鱼香肉丝包 = 3.5元",
+            "茶叶蛋 + 梅干菜肉包 = 3.5元",
+            "茶叶蛋 + 香辣粉丝包 = 3.5元",
+            "茶叶蛋 + 酸菜包 = 3.5元",
+            "茶叶蛋 + 藕丁包 = 3.5元",
+            "茶叶蛋 + 香菇菜包 = 3.5元",
+            "茶叶蛋 + 豆沙包 = 3.5元",
+            "茶叶蛋 + 黑芝麻包 = 3.5元",
+            "茶叶蛋 + 原味豆浆 = 4.0元",
+            "茶叶蛋 + 银耳羹 = 4.5元",
+            "茶叶蛋 + 米酒 = 4.5元",
+            "鲜肉大烧麦 + 桂花/紫薯发糕 = 4.0元",
+            "鲜肉大烧麦 + 奶香/南瓜发糕 = 4.0元",
+            "鲜肉大烧麦 + 招牌牛肉馅饼 = 5.5元",
+            "鲜肉大烧麦 + 奥尔良鸡肉馅饼 = 5.5元",
+            "鲜肉大烧麦 + 猪肉大葱馅饼 = 5.0元",
+            "鲜肉大烧麦 + 酸菜馅饼 = 4.5元",
+            "鲜肉大烧麦 + 秘制牛肉包 = 4.5元",
+            "鲜肉大烧麦 + 奥尔良鸡肉包 = 3.5元",
+            "鲜肉大烧麦 + 酱肉包 = 3.5元",
+            "鲜肉大烧麦 + 鲜汁肉包 = 3.5元",
+            "鲜肉大烧麦 + 小猪椰汁奶黄包 = 3.5元",
+            "鲜肉大烧麦 + 鱼香肉丝包 = 3.0元",
+            "鲜肉大烧麦 + 梅干菜肉包 = 3.0元",
+            "鲜肉大烧麦 + 香辣粉丝包 = 3.0元",
+            "鲜肉大烧麦 + 酸菜包 = 3.0元",
+            "鲜肉大烧麦 + 藕丁包 = 3.0元",
+            "鲜肉大烧麦 + 香菇菜包 = 3.0元",
+            "鲜肉大烧麦 + 豆沙包 = 3.0元",
+            "鲜肉大烧麦 + 黑芝麻包 = 3.0元",
+            "鲜肉大烧麦 + 原味豆浆 = 3.5元",
+            "鲜肉大烧麦 + 银耳羹 = 4.0元",
+            "鲜肉大烧麦 + 米酒 = 4.0元",
+            "桂花/紫薯发糕 + 招牌牛肉馅饼 = 6.5元",
+            "桂花/紫薯发糕 + 奥尔良鸡肉馅饼 = 6.5元",
+            "桂花/紫薯发糕 + 猪肉大葱馅饼 = 6.0元",
+            "桂花/紫薯发糕 + 酸菜馅饼 = 5.5元",
+            "桂花/紫薯发糕 + 秘制牛肉包 = 5.5元",
+            "桂花/紫薯发糕 + 奥尔良鸡肉包 = 4.5元",
+            "桂花/紫薯发糕 + 酱肉包 = 4.5元",
+            "桂花/紫薯发糕 + 鲜汁肉包 = 4.5元",
+            "桂花/紫薯发糕 + 小猪椰汁奶黄包 = 4.5元",
+            "桂花/紫薯发糕 + 鱼香肉丝包 = 4.0元",
+            "桂花/紫薯发糕 + 梅干菜肉包 = 4.0元",
+            "桂花/紫薯发糕 + 香辣粉丝包 = 4.0元",
+            "桂花/紫薯发糕 + 酸菜包 = 4.0元",
+            "桂花/紫薯发糕 + 藕丁包 = 4.0元",
+            "桂花/紫薯发糕 + 香菇菜包 = 4.0元",
+            "桂花/紫薯发糕 + 豆沙包 = 4.0元",
+            "桂花/紫薯发糕 + 黑芝麻包 = 4.0元",
+            "桂花/紫薯发糕 + 原味豆浆 = 4.5元",
+            "桂花/紫薯发糕 + 银耳羹 = 5.0元",
+            "桂花/紫薯发糕 + 米酒 = 5.0元",
+            "奶香/南瓜发糕 + 招牌牛肉馅饼 = 6.5元",
+            "奶香/南瓜发糕 + 奥尔良鸡肉馅饼 = 6.5元",
+            "奶香/南瓜发糕 + 猪肉大葱馅饼 = 6.0元",
+            "奶香/南瓜发糕 + 酸菜馅饼 = 5.5元",
+            "奶香/南瓜发糕 + 秘制牛肉包 = 5.5元",
+            "奶香/南瓜发糕 + 奥尔良鸡肉包 = 4.5元",
+            "奶香/南瓜发糕 + 酱肉包 = 4.5元",
+            "奶香/南瓜发糕 + 鲜汁肉包 = 4.5元",
+            "奶香/南瓜发糕 + 小猪椰汁奶黄包 = 4.5元",
+            "奶香/南瓜发糕 + 鱼香肉丝包 = 4.0元",
+            "奶香/南瓜发糕 + 梅干菜肉包 = 4.0元",
+            "奶香/南瓜发糕 + 香辣粉丝包 = 4.0元",
+            "奶香/南瓜发糕 + 酸菜包 = 4.0元",
+            "奶香/南瓜发糕 + 藕丁包 = 4.0元",
+            "奶香/南瓜发糕 + 香菇菜包 = 4.0元",
+            "奶香/南瓜发糕 + 豆沙包 = 4.0元",
+            "奶香/南瓜发糕 + 黑芝麻包 = 4.0元",
+            "奶香/南瓜发糕 + 原味豆浆 = 4.5元",
+            "奶香/南瓜发糕 + 银耳羹 = 5.0元",
+            "奶香/南瓜发糕 + 米酒 = 5.0元",
+            "招牌牛肉馅饼 + 秘制牛肉包 = 7.0元",
+            "招牌牛肉馅饼 + 奥尔良鸡肉包 = 6.0元",
+            "招牌牛肉馅饼 + 酱肉包 = 6.0元",
+            "招牌牛肉馅饼 + 鲜汁肉包 = 6.0元",
+            "招牌牛肉馅饼 + 小猪椰汁奶黄包 = 6.0元",
+            "招牌牛肉馅饼 + 鱼香肉丝包 = 5.5元",
+            "招牌牛肉馅饼 + 梅干菜肉包 = 5.5元",
+            "招牌牛肉馅饼 + 香辣粉丝包 = 5.5元",
+            "招牌牛肉馅饼 + 酸菜包 = 5.5元",
+            "招牌牛肉馅饼 + 藕丁包 = 5.5元",
+            "招牌牛肉馅饼 + 香菇菜包 = 5.5元",
+            "招牌牛肉馅饼 + 豆沙包 = 5.5元",
+            "招牌牛肉馅饼 + 黑芝麻包 = 5.5元",
+            "招牌牛肉馅饼 + 原味豆浆 = 6.0元",
+            "招牌牛肉馅饼 + 银耳羹 = 6.5元",
+            "招牌牛肉馅饼 + 米酒 = 6.5元",
+            "奥尔良鸡肉馅饼 + 秘制牛肉包 = 7.0元",
+            "奥尔良鸡肉馅饼 + 奥尔良鸡肉包 = 6.0元",
+            "奥尔良鸡肉馅饼 + 酱肉包 = 6.0元",
+            "奥尔良鸡肉馅饼 + 鲜汁肉包 = 6.0元",
+            "奥尔良鸡肉馅饼 + 小猪椰汁奶黄包 = 6.0元",
+            "奥尔良鸡肉馅饼 + 鱼香肉丝包 = 5.5元",
+            "奥尔良鸡肉馅饼 + 梅干菜肉包 = 5.5元",
+            "奥尔良鸡肉馅饼 + 香辣粉丝包 = 5.5元",
+            "奥尔良鸡肉馅饼 + 酸菜包 = 5.5元",
+            "奥尔良鸡肉馅饼 + 藕丁包 = 5.5元",
+            "奥尔良鸡肉馅饼 + 香菇菜包 = 5.5元",
+            "奥尔良鸡肉馅饼 + 豆沙包 = 5.5元",
+            "奥尔良鸡肉馅饼 + 黑芝麻包 = 5.5元",
+            "奥尔良鸡肉馅饼 + 原味豆浆 = 6.0元",
+            "奥尔良鸡肉馅饼 + 银耳羹 = 6.5元",
+            "奥尔良鸡肉馅饼 + 极速 = 6.5元",
+            "猪肉大葱馅饼 + 秘制牛肉包 = 6.5元",
+            "猪肉大葱馅饼 + 奥尔良鸡肉包 = 5.5元",
+            "猪肉大葱馅饼 + 酱肉包 = 5.5元",
+            "猪肉大葱馅饼 + 鲜汁肉包 = 5.5元",
+            "猪肉大葱馅饼 + 极速椰汁奶黄包 = 5.5元",
+            "猪肉大葱馅饼 + 鱼香肉丝包 = 5.0元",
+            "猪肉大葱馅饼 + 梅干菜肉包 = 5.0元",
+            "猪肉大葱馅饼 + 香辣粉丝包 = 5.0元",
+            "猪肉大葱馅饼 + 酸菜包 = 5.0元",
+            "猪肉大葱馅饼 + 藕丁包 = 5.0元",
+            "猪肉大葱馅饼 + 香菇菜包 = 5.0元",
+            "猪肉大葱馅饼 + 豆沙包 = 5.0元",
+            "猪肉大葱馅饼 + 黑芝麻包 = 5.0元",
+            "猪肉大葱馅饼 + 原味豆浆 = 5.5元",
+            "猪肉大葱馅饼 + 银耳羹 = 6.0元",
+            "猪肉大葱馅饼 + 米酒 = 6.0元",
+            "酸菜馅饼 + 秘制牛肉包 = 6.0元",
+            "酸菜馅饼 + 奥尔良鸡肉包 = 5.0元",
+            "极速馅饼 + 酱肉包 = 5.0元",
+            "酸菜馅饼 + 鲜汁肉包 = 5.0元",
+            "酸菜馅饼 + 小猪椰汁奶黄包 = 5.0元",
+            "酸菜馅饼 + 鱼香肉丝包 = 4.5元",
+            "酸菜馅饼 + 梅干菜肉包 = 4.5元",
+            "酸菜馅饼 + 香辣粉丝包 = 4.5元",
+            "酸菜馅饼 + 极速包 = 4.5元",
+            "酸菜馅饼 + 藕丁包 = 4.5元",
+            "酸菜馅饼 + 香菇菜包 = 4.5元",
+            "酸菜馅饼 + 豆沙包 = 4.5元",
+            "酸菜馅饼 + 黑芝麻包 = 4.5元",
+            "酸菜馅饼 + 原味豆浆 = 5.0元",
+            "酸菜馅饼 + 银耳羹 = 5.5元",
+            "酸菜馅饼 + 米酒 = 5.5元",
+            "原味豆浆 + 银耳羹 = 4.5元",
+            "原味豆浆 + 米酒 = 4.5元",
+            "银耳羹 + 米酒 = 5.0元"
+        ];
+
+        // 初始化变量
+        let currentIndex = 0;
+        let shuffledCombos = [];
+        let viewedCombos = [];
+        
+        // DOM元素
+        const comboText = document.getElementById('combo-text');
+        const comboPrice = document.getElementById('combo-price');
+        const progressText = document.getElementById('progress-text');
+        const percentText = document.getElementById('percent-text');
+        const progressBar = document.getElementById('progress-bar');
+        const nextBtn = document.getElementById('next-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const historyList = document.getElementById('history-list');
+        
+        // 初始化应用
+        function initApp() {
+            // 从本地存储获取数据
+            const savedCombos = localStorage.getItem('breakfastCombos');
+            const savedIndex = localStorage.getItem('currentIndex');
+            const savedViewed = localStorage.getItem('viewedCombos');
+            
+            if (savedCombos && savedIndex !== null) {
+                shuffledCombos = JSON.parse(savedCombos);
+                currentIndex = parseInt(savedIndex);
+                
+                if (savedViewed) {
+                    viewedCombos = JSON.parse(savedViewed);
+                    updateHistoryList();
+                }
+                
+                if (currentIndex < shuffledCombos.length) {
+                    showCurrentCombo();
+                } else {
+                    reshuffleCombos();
+                }
+            } else {
+                reshuffleCombos();
+            }
+            
+            updateProgress();
+            
+            // 添加事件监听
+            nextBtn.addEventListener('click', nextCombo);
+            resetBtn.addEventListener('click', function() {
+                if (confirm("确定要重新开始吗？当前进度将会丢失。")) {
+                    reshuffleCombos();
+                }
+            });
+        }
+        
+        // 重新洗牌组合
+        function reshuffleCombos() {
+            // 复制并打乱数组
+            shuffledCombos = [...breakfastCombos];
+            for (let i = shuffledCombos.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledCombos[i], shuffledCombos[j]] = [shuffledCombos[j], shuffledCombos[i]];
+            }
+            
+            currentIndex = 0;
+            viewedCombos = [];
+            historyList.innerHTML = '<div class="history-item">暂无浏览记录</div>';
+            
+            // 保存到本地存储
+            localStorage.setItem('breakfastCombos', JSON.stringify(shuffledCombos));
+            localStorage.setItem('currentIndex', currentIndex);
+            localStorage.setItem('viewedCombos', JSON.stringify(viewedCombos));
+            
+            showCurrentCombo();
+            updateProgress();
+        }
+        
+        // 显示当前组合
+        function showCurrentCombo() {
+            if (currentIndex < shuffledCombos.length) {
+                const combo = shuffledCombos[currentIndex];
+                const [comboName, price] = combo.split(' = ');
+                
+                comboText.textContent = comboName;
+                comboPrice.textContent = price;
+            } else {
+                comboText.textContent = "已完成所有搭配！";
+                comboPrice.textContent = "点击\"重新开始\"获取新组合";
+            }
+        }
+        
+        // 更新进度
+        function updateProgress() {
+            const percent = Math.round((currentIndex / shuffledCombos.length) * 100);
+            progressText.textContent = `${currentIndex}/${shuffledCombos.length}`;
+            percentText.textContent = `${percent}%`;
+            progressBar.style.width = `${percent}%`;
+        }
+        
+        // 更新历史记录
+        function updateHistoryList() {
+            if (viewedCombos.length === 0) {
+                historyList.innerHTML = '<div class="history-item">暂无浏览记录</div>';
+                return;
+            }
+            
+            historyList.innerHTML = '';
+            viewedCombos.slice().reverse().forEach(combo => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.textContent = combo;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // 下一个组合
+        function nextCombo() {
+            if (currentIndex < shuffledCombos.length) {
+                // 添加到已查看列表
+                viewedCombos.push(shuffledCombos[currentIndex]);
+                
+                // 更新历史记录显示
+                updateHistoryList();
+                
+                currentIndex++;
+                
+                // 保存到本地存储
+                localStorage.setItem('currentIndex', currentIndex);
+                localStorage.setItem('viewedCombos', JSON.stringify(viewedCombos));
+                
+                if (currentIndex < shuffledCombos.length) {
+                    showCurrentCombo();
+                } else {
+                    comboText.textContent = "已完成所有搭配！";
+                    comboPrice.textContent = "点击\"重新开始\"获取新组合";
+                }
+                
+                updateProgress();
+            }
+        }
+        
+        // 初始化应用
+        initApp();
+    </script>
+</body>
+</html>

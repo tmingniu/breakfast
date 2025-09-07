@@ -63,6 +63,12 @@
     --warning-color: #fdcb6e;
 }
 
+button, .menu-btn, .theme-switcher, .menu-btn-small, .action-btn {
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
 /* 主题切换按钮 */
 .theme-switcher {
     position: fixed;

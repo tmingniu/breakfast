@@ -1,3 +1,9 @@
+button, .menu-btn, .theme-switcher, .menu-btn-small, .action-btn {
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
 * {
     margin: 0;
     padding: 0;

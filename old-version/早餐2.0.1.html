@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>早餐搭配选择助手 - 多主题支持</title>
+    <style>
+        button, .menu-btn, .theme-switcher, .menu-btn-small, .action-btn {
+            -webkit-tap-highlight-color: transparent;
+            tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        /* 修复：确保body和html高度100% */
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* 默认主题 - 温暖早餐风 */
+        :root {
+            /* 颜色变量 */
+            --primary-color: #ff6b6b;
+            --secondary-color: #4ecdc4;
+            --accent-color: #ff9a9e;
+            --background-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #333;
+            --text-light: #666;
+            --success-color: #07c160;
+            --warning-color: #ff9500;
+        }
+
+        /* 清新绿色主题 */
+        [data-theme="green"] {
+            --primary-color: #2ecc71;
+            --secondary-color: #3498db;
+            --accent-color: #1abc9c;
+            --background-gradient: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #2c3e50;
+            --text-light: #7f8c8d;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+
+        /* 深色模式主题 */
+        [data-theme="dark"] {
+            --primary-color: #bb86fc;
+            --secondary-color: #03dac6;
+            --accent-color: #cf6679;
+            --background-gradient: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --card-bg: rgba(30, 30, 30, 0.95);
+            --text-color: #e0e0e0;
+            --text-light: #b0b0b0;
+            --success-color: #00c853;
+            --warning-color: #ffab00;
+        }
+
+        /* 梦幻紫色主题 */
+        [data-theme="purple"] {
+            --primary-color: #9b59b6;
+            --secondary-color: #8e44ad;
+            --accent-color: #e056fd;
+            --background-gradient: linear-gradient(135deg, #d4c1ec 0%, #9f7aea 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #2d3436;
+            --text-light: #636e72;
+            --success-color: #6c5ce7;
+            --warning-color: #fdcb6e;
+        }
+
+        /* 简约蓝色主题 */
+        [data-theme="blue"] {
+            --primary-color: #2980b9;
+            --secondary-color: #3498db;
+            --accent-color: #74b9ff;
+            --background-gradient: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-color: #2d3436;
+            --text-light: #636e72;
+            --success-color: #0984e3;
+            --warning-color: #fdcb6e;
+        }
+
+        body {
+            background: var(--background-gradient);
+            min-height: 100vh;
+            color: var(--text-color);
+            position: relative;
+            transition: background 0.5s ease;
+            /* 修复：确保背景铺满 */
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        /* 主题切换按钮 */
+        .theme-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1002;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            display: none;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 200px;
+        }
+
+        .theme-panel.open {
+            display: flex;
+        }
+
+        .theme-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-option:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-option.active {
+            border-color: var(--text-color);
+        }
+
+        .theme-default {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        .theme-green {
+            background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+        }
+
+        .theme-dark {
+            background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+        }
+
+        .theme-purple {
+            background: linear-gradient(135deg, #d4c1ec 0%, #9f7aea 100%);
+        }
+
+        .theme-blue {
+            background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+        }
+
+        /* 修复：侧边栏样式 */
+        .sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh; /* 确保覆盖整个视口高度 */
+            background: var(--card-bg);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: left 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        .menu-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-title {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .menu-management {
+            margin-bottom: 25px;
+        }
+
+        .menu-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .menu-btn-small {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-align: left;
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .menu-btn-small:hover {
+            transform: translateX(5px);
+            opacity: 0.9;
+        }
+
+        .current-menu-info {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .menu-info {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .menu-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* 修复：主内容区域居中问题 */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 80px 20px 20px;
+            width: 100%;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin: 0 auto; /* 确保居中 */
+            transition: all 0.3s ease;
+        }
+
+        body.sidebar-open .container {
+            transform: translateX(150px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: var(--text-light);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .current-combo {
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .current-combo:hover {
+            transform: translateY(-5px);
+        }
+
+        .combo-text {
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+
+        .price {
+            font-size: 20px;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-container {
+            margin-bottom: 25px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent-color), var(--primary-color));
+            border-radius: 5px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        button.action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-3px);
+            opacity: 0.9;
+        }
+
+        .history-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+                left: -280px;
+            }
+
+            body.sidebar-open .container {
+                transform: translateX(140px);
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .theme-panel {
+                right: 10px;
+                width: 180px;
+            }
+
+            .main-content {
+                padding: 70px 15px 15px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="default">
+<!-- 主题切换按钮 -->
+<button class="theme-switcher" id="theme-toggle">🎨</button>
+<div class="theme-panel" id="theme-panel">
+    <div class="theme-option theme-default active" data-theme="default" title="默认主题"></div>
+    <div class="theme-option theme-green" data-theme="green" title="清新绿色"></div>
+    <div class="theme-option theme-dark" data-theme="dark" title="深色模式"></div>
+    <div class="theme-option theme-purple" data-theme="purple" title="梦幻紫色"></div>
+    <div class="theme-option theme-blue" data-theme="blue" title="简约蓝色"></div>
+</div>
+
+<!-- 侧边栏 -->
+<button class="menu-btn" id="sidebar-toggle">☰</button>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-title">📋 菜单管理</div>
+        <div class="menu-status" id="menu-status">默认菜单</div>
+    </div>
+
+    <div class="menu-management">
+        <div class="menu-section">
+            <div class="section-title">📁 文件操作</div>
+            <div class="menu-buttons">
+                <button class="menu-btn-small import-btn" id="import-btn">📥 导入菜单</button>
+                <button class="menu-btn-small export-btn" id="export-btn">📤 导出菜单</button>
+                <input type="file" id="file-input" class="file-input" accept=".json,.txt,.csv">
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="section-title">🔄 菜单切换</div>
+            <div class="menu-buttons">
+                <button class="menu-btn-small template-btn" id="template-btn">🍽️ 使用示例菜单</button>
+                <button class="menu-btn-small reset-btn" id="reset-menu-btn">↩️ 重置默认菜单</button>
+            </div>
+        </div>
+
+        <div class="current-menu-info">
+            <div class="menu-info" id="menu-info">当前菜单: 默认早餐菜单</div>
+            <div class="menu-stats">
+                <span class="stat-item" id="menu-count">10 菜品</span>
+                <span class="stat-item" id="menu-date">刚刚加载</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- 修复：主内容区域使用新的包裹层 -->
+<div class="main-content">
+    <div class="container">
+        <header>
+            <h1>早餐搭配选择助手</h1>
+            <p class="description">多主题支持 • 智能搭配推荐 • 进度记忆功能</p>
+        </header>
+
+        <div class="current-combo">
+            <div class="combo-text" id="combo-text">点击"下一个"开始</div>
+            <div class="price" id="combo-price"></div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="progress-text">0/10</span>
+                <span id="percent-text">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="action-btn next-btn" id="next-btn">下一个搭配</button>
+        </div>
+
+        <div>
+            <div class="history-title">最近浏览</div>
+            <div class="history-list" id="history-list">
+                <div class="history-item">暂无浏览记录</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 默认菜单数据
+    const defaultMenu = [
+        "刀切馒头 + 茶叶蛋 = 3.0元",
+        "刀切馒头 + 鲜肉大烧麦 = 2.5元",
+        "刀切馒头 + 桂花/紫薯发糕 = 3.5元",
+        "刀切馒头 + 奶香/南瓜发糕 = 3.5元",
+        "葱油花卷 + 茶叶蛋 = 3.0元",
+        "葱油花卷 + 鲜肉大烧麦 = 2.5元",
+        "红糖馒头 + 茶叶蛋 = 3.5元",
+        "原味豆浆 + 银耳羹 = 4.5元",
+        "原味豆浆 + 米酒 = 4.5元",
+        "银耳羹 + 米酒 = 5.0元"
+    ];
+
+    // 初始化变量
+    let currentMenu = [];
+    let currentIndex = 0;
+    let shuffledCombos = [];
+    let viewedCombos = [];
+
+    // DOM元素
+    const comboText = document.getElementById('combo-text');
+    const comboPrice = document.getElementById('combo-price');
+    const progressText = document.getElementById('progress-text');
+    const percentText = document.getElementById('percent-text');
+    const progressBar = document.getElementById('progress-bar');
+    const nextBtn = document.getElementById('next-btn');
+    const historyList = document.getElementById('history-list');
+    const importBtn = document.getElementById('import-btn');
+    const exportBtn = document.getElementById('export-btn');
+    const resetMenuBtn = document.getElementById('reset-menu-btn');
+    const templateBtn = document.getElementById('template-btn');
+    const fileInput = document.getElementById('file-input');
+    const menuStatus = document.getElementById('menu-status');
+    const menuInfo = document.getElementById('menu-info');
+    const menuCount = document.getElementById('menu-count');
+    const menuDate = document.getElementById('menu-date');
+    const themeToggle = document.getElementById('theme-toggle');
+    const themePanel = document.getElementById('theme-panel');
+    const body = document.body;
+
+    // 主题功能
+    function setupThemeSwitcher() {
+        // 从本地存储加载主题
+        const savedTheme = localStorage.getItem('theme') || 'default';
+        body.setAttribute('data-theme', savedTheme);
+
+        // 激活当前主题的选项
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.classList.remove('active');
+            if (option.dataset.theme === savedTheme) {
+                option.classList.add('active');
+            }
+        });
+
+        // 主题切换按钮事件
+        themeToggle.addEventListener('click', () => {
+            themePanel.classList.toggle('open');
+        });
+
+        // 主题选择事件
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const theme = option.dataset.theme;
+                body.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+                window.location.reload();
+
+                // 更新激活状态
+                document.querySelectorAll('.theme-option').forEach(opt => {
+                    opt.classList.remove('active');
+                });
+                option.classList.add('active');
+
+                themePanel.classList.remove('open');
+            });
+        });
+
+        // 点击外部关闭主题面板
+        document.addEventListener('click', (e) => {
+            if (!themeToggle.contains(e.target) && !themePanel.contains(e.target)) {
+                themePanel.classList.remove('open');
+            }
+        });
+    }
+
+    // 侧边栏功能
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('open');
+        sidebarOverlay.classList.toggle('active');
+        body.classList.toggle('sidebar-open');
+    }
+
+    // 初始化应用
+    function initApp() {
+        setupThemeSwitcher();
+        loadMenu();
+        setupEventListeners();
+        reshuffleCombos();
+    }
+
+    // 加载菜单
+    function loadMenu() {
+        const savedMenu = localStorage.getItem('currentMenu');
+        const savedMenuName = localStorage.getItem('menuName') || '默认菜单';
+
+        if (savedMenu) {
+            currentMenu = JSON.parse(savedMenu);
+            menuStatus.textContent = savedMenuName;
+            menuInfo.textContent = `当前菜单: ${savedMenuName}`;
+        } else {
+            currentMenu = defaultMenu;
+            menuStatus.textContent = '默认菜单';
+            menuInfo.textContent = '当前菜单: 默认早餐菜单';
+        }
+
+        menuCount.textContent = `菜品数量: ${currentMenu.length}`;
+        menuDate.textContent = `加载时间: ${new Date().toLocaleTimeString()}`;
+    }
+
+    // 设置事件监听
+    function setupEventListeners() {
+        // 侧边栏事件
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // 菜单管理事件
+        importBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileImport);
+        exportBtn.addEventListener('click', exportMenu);
+        resetMenuBtn.addEventListener('click', resetToDefaultMenu);
+        templateBtn.addEventListener('click', showTemplateMenu);
+
+        // 主要功能事件
+        nextBtn.addEventListener('click', nextCombo);
+    }
+
+    // 重新洗牌组合
+    function reshuffleCombos() {
+        shuffledCombos = [...currentMenu];
+        for (let i = shuffledCombos.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledCombos[i], shuffledCombos[j]] = [shuffledCombos[j], shuffledCombos[i]];
+        }
+
+        currentIndex = 0;
+        viewedCombos = [];
+        historyList.innerHTML = '<div class="history-item">暂无浏览记录</div>';
+
+        localStorage.setItem('breakfastCombos', JSON.stringify(shuffledCombos));
+        localStorage.setItem('currentIndex', currentIndex);
+        localStorage.setItem('viewedCombos', JSON.stringify(viewedCombos));
+
+        showCurrentCombo();
+        updateProgress();
+    }
+
+    // 显示当前组合
+    function showCurrentCombo() {
+        if (currentIndex < shuffledCombos.length) {
+            const combo = shuffledCombos[currentIndex];
+            const [comboName, price] = combo.split(' = ');
+
+            comboText.textContent = comboName;
+            comboPrice.textContent = price;
+        } else {
+            comboText.textContent = "已完成所有搭配！";
+            comboPrice.textContent = "点击侧边栏重置菜单";
+        }
+    }
+
+    // 更新进度
+    function updateProgress() {
+        const percent = Math.round((currentIndex / shuffledCombos.length) * 100);
+        progressText.textContent = `${currentIndex}/${shuffledCombos.length}`;
+        percentText.textContent = `${percent}%`;
+        progressBar.style.width = `${percent}%`;
+    }
+
+    // 更新历史记录
+    function updateHistoryList() {
+        if (viewedCombos.length === 0) {
+            historyList.innerHTML = '<div class="history-item">暂无浏览记录</div>';
+            return;
+        }
+
+        historyList.innerHTML = '';
+        viewedCombos.slice().reverse().forEach(combo => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.textContent = combo;
+            historyList.appendChild(historyItem);
+        });
+    }
+
+    // 下一个组合
+    function nextCombo() {
+        if (currentIndex < shuffledCombos.length) {
+            viewedCombos.push(shuffledCombos[currentIndex]);
+            updateHistoryList();
+
+            currentIndex++;
+            localStorage.setItem('currentIndex', currentIndex);
+            localStorage.setItem('viewedCombos', JSON.stringify(viewedCombos));
+
+            if (currentIndex < shuffledCombos.length) {
+                showCurrentCombo();
+            } else {
+                comboText.textContent = "已完成所有搭配！";
+                comboPrice.textContent = "点击侧边栏重置菜单";
+            }
+
+            updateProgress();
+        }
+    }
+
+    // 处理文件导入
+    function handleFileImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const content = e.target.result;
+                let importedMenu;
+
+                if (file.name.endsWith('.json')) {
+                    importedMenu = JSON.parse(content);
+                } else {
+                    importedMenu = content.split('\n')
+                        .filter(line => line.trim())
+                        .map(line => line.trim());
+                }
+
+                if (Array.isArray(importedMenu) && importedMenu.length > 0) {
+                    currentMenu = importedMenu;
+                    saveMenu(file.name.replace(/\.[^/.]+$/, ""));
+                    reshuffleCombos();
+                    alert(`成功导入 ${importedMenu.length} 个菜品！`);
+                    // 重置文件输入，允许再次选择同一文件
+                    this.fileInput.value = '';
+                } else {
+                    throw new Error('无效的菜单格式');
+                }
+            } catch (error) {
+                alert('导入失败：' + error.message);
+                // 出错时也重置文件输入
+                this.fileInput.value = '';
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // 导出菜单
+    function exportMenu() {
+        const menuData = JSON.stringify(currentMenu, null, 2);
+        const blob = new Blob([menuData], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '早餐菜单.json';
+        a.click();
+
+        URL.revokeObjectURL(url);
+    }
+
+    // 重置到默认菜单
+    function resetToDefaultMenu() {
+        if (confirm('确定要重置为默认菜单吗？')) {
+            currentMenu = defaultMenu;
+            saveMenu('默认菜单');
+            reshuffleCombos();
+            alert('已重置为默认菜单');
+        }
+    }
+
+    // 显示模板菜单选择
+    function showTemplateMenu() {
+        alert('示例菜单功能将在完整版中提供');
+    }
+
+    // 保存菜单
+    function saveMenu(name) {
+        localStorage.setItem('currentMenu', JSON.stringify(currentMenu));
+        localStorage.setItem('menuName', name);
+        menuStatus.textContent = name;
+        menuInfo.textContent = `当前菜单: ${name}`;
+        menuCount.textContent = `菜品数量: ${currentMenu.length}`;
+        menuDate.textContent = `加载时间: ${new Date().toLocaleTimeString()}`;
+    }
+
+    // 初始化应用
+    initApp();
+</script>
+</body>
+</html>
