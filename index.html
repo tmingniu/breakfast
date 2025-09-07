@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>早餐搭配选择助手 - 多主题支持</title>
+    <link rel="stylesheet" href="./styles/main.css">
+    <link rel="stylesheet" href="./styles/themes.css">
+</head>
+<body data-theme="default">
+<!-- 主题切换按钮 -->
+<button class="theme-switcher" id="theme-toggle">🎨</button>
+<div class="theme-panel" id="theme-panel">
+    <div class="theme-option theme-default active" data-theme="default" title="默认主题"></div>
+    <div class="theme-option theme-green" data-theme="green" title="清新绿色"></div>
+    <div class="theme-option theme-dark" data-theme="dark" title="深色模式"></div>
+    <div class="theme-option theme-purple" data-theme="purple" title="梦幻紫色"></div>
+    <div class="theme-option theme-blue" data-theme="blue" title="简约蓝色"></div>
+</div>
+
+<!-- 侧边栏 -->
+<button class="menu-btn" id="sidebar-toggle">☰</button>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-title">📋 菜单管理</div>
+        <div class="menu-status" id="menu-status">默认菜单</div>
+    </div>
+
+    <div class="menu-management">
+        <div class="menu-section">
+            <div class="section-title">📁 文件操作</div>
+            <div class="menu-buttons">
+                <button class="menu-btn-small import-btn" id="import-btn">📥 导入菜单</button>
+                <button class="menu-btn-small export-btn" id="export-btn">📤 导出菜单</button>
+                <input type="file" id="file-input" class="file-input" accept=".json,.txt,.csv">
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <div class="section-title">🔄 菜单切换</div>
+            <div class="menu-buttons">
+                <button class="menu-btn-small template-btn" id="template-btn">🍽️ 使用示例菜单</button>
+                <button class="menu-btn-small reset-btn" id="reset-menu-btn">↩️ 重置默认菜单</button>
+            </div>
+        </div>
+
+        <div class="current-menu-info">
+            <div class="menu-info" id="menu-info">当前菜单: 默认早餐菜单</div>
+            <div class="menu-stats">
+                <span class="stat-item" id="menu-count">10 菜品</span>
+                <span class="stat-item" id="menu-date">刚刚加载</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- 主内容区域 -->
+<div class="main-content">
+    <div class="container">
+        <header>
+            <h1>早餐搭配选择助手</h1>
+            <p class="description">多主题支持 • 智能搭配推荐 • 进度记忆功能</p>
+        </header>
+
+        <div class="current-combo">
+            <div class="combo-text" id="combo-text">点击"下一个"开始</div>
+            <div class="price" id="combo-price"></div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="progress-text">0/10</span>
+                <span id="percent-text">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="action-btn next-btn" id="next-btn">下一个搭配</button>
+        </div>
+
+        <div>
+            <div class="history-title">最近浏览</div>
+            <div class="history-list" id="history-list">
+                <div class="history-item">暂无浏览记录</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 加载JavaScript文件 -->
+<script src="./data/default-menu.js"></script>
+<script src="./js/sidebar.js"></script>
+<script src="./js/theme-switcher.js"></script>
+<script src="./js/menu-manager.js"></script>
+<script src="./js/main.js"></script>
+</body>
+</html>
